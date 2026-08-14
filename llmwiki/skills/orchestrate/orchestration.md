@@ -54,7 +54,7 @@ orca orchestration dispatch-show --task <task_id> --json
 ## Messaging
 
 ```bash
-orca orchestration send --to <handle|@group> --subject <text> [--from <handle>] [--body <text>] [--type <type>] [--priority <level>] [--thread-id <id>] [--payload <json>] [--json]
+orca orchestration send --subject <text> [--to <run:id|dispatch:id|legacy_handle>] [--run <run_id>] [--from <handle>] [--body <text>] [--type <type>] [--priority <level>] [--thread-id <id>] [--payload <json>] [--task-id <id>] [--dispatch-id <id>] [--outcome <succeeded|failed>] [--files-modified <csv>] [--report-path <path>] [--phase <text>] [--json]
 orca orchestration check [--terminal <handle>] [--unread] [--types <type,...>] [--inject] [--wait] [--timeout-ms <n>] [--json]
 orca orchestration reply --id <msg_id> --body <text> [--from <handle>] [--json]
 orca orchestration ask --to <handle> --question <text> [--options <csv>] [--timeout-ms <n>] [--from <handle>] [--json]
@@ -137,7 +137,12 @@ Wait for `tui-idle` before dispatching. Always pass `--timeout-ms`; real coding 
 ## Agent Guidance
 
 - Workers with a valid live preamble must send `worker_done` exactly once, even on failure:
-  `orca orchestration send --to <coordinator_handle> --type worker_done --subject "<short status>" --body "<3-sentence summary: what you did, what you found, what's left>" --payload '{"taskId":"<task_id>","dispatchId":"<dispatch_id>","filesModified":["path/a"],"reportPath":"<optional>"}' --json`
+  `orca orchestration send --to <coordinator_handle> --type worker_done --subject "<short status>" --body "<3-sentence summary: what you did, what you found, what's left>" --outcome <succeeded|failed> --task-id <task_id> --dispatch-id <dispatch_id> [--files-modified path/a,path/b] [--report-path <optional>] --json`
+  `worker_done` has three hard requirements, each rejected with exit 1 (verified 2026-08-14 against the installed CLI):
+  `--outcome succeeded|failed` is mandatory — omitting it gives `worker_done requires outcome=succeeded|failed for a current Dispatch`;
+  `--dispatch-id` is mandatory — omitting it gives `Rejected msg_<id>: worker_done requires dispatchId`;
+  and `--payload` may not be combined with the structured flags — doing so gives `Use either --payload or structured payload flags, not both`.
+  So a `worker_done` built from raw `--payload` JSON, the shape this file documented before, always fails. Check the exit code: a rejected send still prints to stdout, so scripts that log success unconditionally will hide the failure.
 - For long tasks, send heartbeat/status only when the preamble asks for it, including both IDs:
   `orca orchestration send --to <coordinator_handle> --type heartbeat --subject "alive" --payload '{"taskId":"<task_id>","dispatchId":"<dispatch_id>","phase":"implementing"}' --json`
 - If blocked before completion, use `ask`; use `escalation` only when ownership is valid and the coordinator must intervene.
