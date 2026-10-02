@@ -37,13 +37,17 @@ script tự dừng và chỉ đường cài Git for Windows. Chưa có gói `win
 
 Mặc định cài/update **cả 3 trụ**: **Harness** (validator tất định vendor-neutral — chặn ghi `raw/`, ép wiki có `## Origin`… qua hook native + CI làm sàn) · **Skills** (global `~/.claude/skills`) · **llmwiki** (khung wiki). Cuối lần chạy in **bảng trạng thái 3 trụ**. Cờ: `--harness-only` · `--clean` · `uninstall` (bản PowerShell: `-HarnessOnly` · `-Clean`).
 
-**Gỡ khỏi một dự án** — chạy trong thư mục gốc dự án đó:
+**Gỡ khỏi một dự án** — chạy trong thư mục gốc dự án đó (lệnh của fork `dragonwar000/setup`, dùng được ngay):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Rheinmir/setup/orca/harness/poc-vendor-neutral/bootstrap.sh | bash -s -- uninstall
+curl -fsSL https://raw.githubusercontent.com/dragonwar000/setup/orca/harness/poc-vendor-neutral/bootstrap-fork.sh | FORK_REF=orca bash -s -- uninstall
 ```
 
-Lệnh gỡ con dấu `.harness-stamp` (công tắc của hook global, nên harness tắt ngay ở dự án này), gỡ hook và CI mà installer đã thêm, xoá lõi `.harness/poc-vendor-neutral/` — nhưng **giữ nguyên wiki của bạn** (`.llmwiki/`) và mọi hook do bạn tự viết. Thêm `--purge-wiki` để xoá luôn wiki. Engine global `~/.claude/harness` được giữ vì các dự án khác còn dùng. Mở phiên agent mới sau khi gỡ.
+Thêm `--purge-wiki` sau `uninstall` để xoá luôn wiki. Phải dùng `bootstrap-fork.sh` kèm `FORK_REF=orca`: nó trỏ đủ các biến nguồn về fork, còn `bootstrap.sh` dù tải từ fork vẫn mặc định kéo `uninstall.sh` từ repo gốc (bản cũ, không gỡ được). Lệnh đã chạy thử thật qua mạng ngày 02/10/2026: trước khi gỡ hook chặn ghi `raw/` (rc=2), sau khi gỡ không còn chặn (rc=0), wiki được giữ.
+
+Lệnh gỡ con dấu `.harness-stamp` (công tắc của hook global, nên harness tắt ngay ở dự án này), gỡ hook và CI mà installer đã thêm, xoá lõi `.harness/poc-vendor-neutral/` — nhưng **giữ nguyên wiki của bạn** (`.llmwiki/`) và mọi hook do bạn tự viết. Engine global `~/.claude/harness` được giữ vì các dự án khác còn dùng. Mở phiên agent mới sau khi gỡ.
+
+> Repo gốc `Rheinmir/setup` **chưa** có lệnh gỡ này (chờ PR #199). Trước khi PR đó được merge, đừng dùng `…/Rheinmir/setup/…/bootstrap.sh | bash -s -- uninstall`: bootstrap ở đó chuyển chữ `uninstall` cho `install.sh`, nó bị hiểu thành đường dẫn dự án và không gỡ gì.
 
 **Module tuỳ chọn — orca-graph.** Engine đồ thị phân việc (`/orca-graph`, `/tc-run`, control-room) sống ở repo riêng [`Rheinmir/orca-graph`](https://github.com/Rheinmir/orca-graph) để có lịch sử, test và bộ eval riêng; trình cài chỉ kéo nó khi option được tick. Option này **đã tick sẵn**: chạy trong terminal sẽ thấy checklist dưới đây, **chỉ cần Enter là kéo đủ**; gõ `1` để bỏ tick, `n` để bỏ hết. Agent hoặc CI chạy (không có terminal) thì kéo luôn, không hỏi.
 
