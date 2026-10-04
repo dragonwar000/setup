@@ -48,3 +48,6 @@
 | 2026-08-17 11:46:07 | `file.write` | llmwiki/wiki/index.md · tool=Edit · session=b8afb386 · actor=agent · prev=b2eea265caa38cd51851c73078c79cdc76681fc834d146 |
 
 <!-- log:auto:end -->
+
+## 2026-10-03 — propose — harness-claude-orca-integration
+- Draft `wiki/sources/draft/031026-harness-claude-orca-integration.md` (task T-261003-01), trang sơ đồ `html/031026-harness-claude-orca-integration-seq.html`, trang giải thích `html/031026-harness-claude-orca-integration-explain.html`, sổ unknown U-02. Trạng thái proposed, chờ duyệt ở cổng.
