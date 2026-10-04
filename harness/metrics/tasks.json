@@ -334,5 +334,18 @@
         "note": "file SPEC/HTML/unknown đã xoá theo yêu cầu user 2026-08-07; backup ở scratchpad"
       }
     ]
+  },
+  "T-261003-01": {
+    "id": "T-261003-01",
+    "title": "Harness tích hợp Claude Code CLI và Orca",
+    "state": "proposed",
+    "created": "2026-10-03T19:05:34",
+    "updated": "2026-10-03T19:05:34",
+    "history": [
+      {
+        "state": "proposed",
+        "ts": "2026-10-03T19:05:34"
+      }
+    ]
   }
 }
