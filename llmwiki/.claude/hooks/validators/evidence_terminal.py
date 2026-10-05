@@ -5,6 +5,12 @@ Chuoi "A vi B vi chung cu C" hop le. Chuoi "A vi B vi C" ma C lai la mot suy lua
 CHUA xong — phai khai tiep C dua tren cai gi. Bat hinh dang chuoi thi tat dinh va re; bat noi
 dung tung menh de thi khong. Luat nay gac hinh dang.
 
+Rieng ket luan VE CODE (kind: code-line) con mot tang nua: no phai neo vao SO DONG, va dong do
+khong duoc chi la mot LOI GOI HAM — mot loi goi khong chung minh ham do lam gi. Ham co trong
+source thi phai tro tiep 'impl_ref' toi dong dinh nghia; ham nam trong SDK/thu vien thi phai tra
+tai lieu ('sdk_doc': url + accessed + quote) VA tai lieu phai mang mot CANH BAO DO cho nguoi doc,
+vi luc do ket luan tua vao mot ban mo ta ben ngoai repo chu khong vao ma nguon dang chay.
+
   --check FILE            doc khoi ```evidence-chain trong FILE, validate. FILE='-' doc stdin.
   --no-evidence-chain     tat luat cho DUNG mot lan chay (uu tien cao nhat).
   --self-test             kiem tra tat dinh, khong doc file ngoai.
@@ -238,6 +244,93 @@ def self_test() -> int:
     if not ok:
         fails.append(f"parametric di kem observed bi tu choi: {why}")
 
+    # --- code-line: ket luan ve code phai neo vao DONG, khong duoc dung o mot LOI GOI ---
+    # Fixture viet ra thu muc tam roi lay chinh do lam root: so dong co dinh, khong troi theo
+    # nhung lan sua file that trong repo (bai hoc: self-test tro vao file song se do sau vai commit).
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        tdp = Path(td)
+        (tdp / "app.py").write_text(
+            "import sdklib\n"                                  # 1
+            "\n"                                               # 2
+            "def start(url):\n"                                # 3
+            "    return sdklib.connect(url)\n"                 # 4
+            "\n"                                               # 5
+            "def helper(x):\n"                                 # 6
+            "    return x + 1\n"                               # 7
+            "\n"                                               # 8
+            "def run(x):\n"                                    # 9
+            "    return helper(x)\n",                          # 10
+            encoding="utf-8")
+
+        def cl(ev):
+            return [{"id": "C1", "claim": "a", "kind": "inference", "because": ["L1"]},
+                    {"id": "L1", "claim": "b", "kind": "code-line", "evidence": ev}]
+
+        ok, why = validate_chain(cl({"ref": "app.py:3"}), tdp, {})
+        if not ok:
+            fails.append(f"code-line tro vao dong DINH NGHIA bi tu choi: {why}")
+
+        ok, why = validate_chain(cl({"ref": "app.py"}), tdp, {})
+        if ok:
+            fails.append("code-line thieu SO DONG ma van pass")
+
+        ok, why = validate_chain(cl({"ref": "app.py:999"}), tdp, {})
+        if ok:
+            fails.append("code-line tro ra ngoai file ma van pass")
+
+        ok, why = validate_chain(cl({"ref": "app.py:10"}), tdp, {})
+        if ok:
+            fails.append("code-line dung o mot LOI GOI (khong khai tiep) ma van pass")
+
+        ok, why = validate_chain(cl({"ref": "app.py:10", "callee": "helper",
+                                     "impl_ref": "app.py:6"}), tdp, {})
+        if not ok:
+            fails.append(f"code-line goi ham NOI BO co impl_ref dung bi tu choi: {why}")
+
+        ok, why = validate_chain(cl({"ref": "app.py:10", "callee": "helper",
+                                     "impl_ref": "app.py:7"}), tdp, {})
+        if ok:
+            fails.append("impl_ref tro vao dong KHONG phai dinh nghia ma van pass")
+
+        sdk_doc = {"url": "https://sdklib.example/api#connect", "accessed": "2026-09-08",
+                   "quote": "connect(url) opens a socket and blocks until the handshake completes"}
+        ok, why = validate_chain(cl({"ref": "app.py:10", "callee": "helper",
+                                     "sdk_doc": sdk_doc}), tdp, {})
+        if ok:
+            fails.append("ham CO trong source ma tra tai lieu SDK van pass")
+
+        ok, why = validate_chain(cl({"ref": "app.py:4", "callee": "connect",
+                                     "sdk_doc": sdk_doc}), tdp, {})
+        if not ok:
+            fails.append(f"code-line goi ham SDK co sdk_doc du 3 truong bi tu choi: {why}")
+
+        for thieu in ("url", "accessed", "quote"):
+            d = {k: v for k, v in sdk_doc.items() if k != thieu}
+            ok, why = validate_chain(cl({"ref": "app.py:4", "callee": "connect", "sdk_doc": d}),
+                                     tdp, {})
+            if ok:
+                fails.append(f"sdk_doc thieu '{thieu}' ma van pass")
+
+        ok, why = validate_chain(cl({"ref": "app.py:4", "callee": "connect",
+                                     "impl_ref": "app.py:3", "sdk_doc": sdk_doc}), tdp, {})
+        if ok:
+            fails.append("khai CA impl_ref va sdk_doc ma van pass")
+
+        # duong lach: muon 'observed' (chi doi file ton tai) de tranh luat code-line
+        ok, why = validate_chain([
+            {"id": "C1", "claim": "a", "kind": "inference", "because": ["O1"]},
+            {"id": "O1", "claim": "b", "kind": "observed", "evidence": {"ref": "app.py:10"}},
+        ], tdp, {})
+        if ok:
+            fails.append("ket luan ve ma nguon muon duoc 'observed' — duong lach con mo")
+
+        # nut tua tai lieu SDK phai LO DIEN de main() in canh bao do
+        sdk = evidence_leaf.sdk_backed_leaves(cl({"ref": "app.py:4", "callee": "connect",
+                                                  "sdk_doc": sdk_doc}))
+        if len(sdk) != 1 or sdk[0]["callee"] != "connect":
+            fails.append("sdk_backed_leaves khong nhan dien duoc la tua tai lieu SDK")
+
     # --- cong tac ba tang: uu tien tu HEP toi RONG, va tat phai NOI RO tang nao ---
     en, layer = switch_state(["--no-evidence-chain"], {"OVERSTACK_EVIDENCE_TERMINAL": "1"},
                              {"enabled": True})
@@ -324,12 +417,32 @@ def main() -> None:
     if nodes is None:
         sys.exit(0)
 
-    ok, why = validate_chain(nodes, root, cfg)
-    if ok:
-        sys.exit(0)
     strict = cfg.get("mode") == "strict"
-    print(f"[R19 evidence-terminal] {why}", file=sys.stderr)
-    sys.exit(2 if strict else 0)
+    ok, why = validate_chain(nodes, root, cfg)
+    if not ok:
+        print(f"[R19 evidence-terminal] {why}", file=sys.stderr)
+        sys.exit(2 if strict else 0)
+
+    # ── canh bao DO: ket luan ve code dang tua vao TAI LIEU SDK, khong vao ma nguon ──
+    # Chuoi van hop le — nhung do chac chan cua no KHAC voi doc code: tai lieu co the cu, co the
+    # sai, co the khong khop phien ban dang cai. Nguoi doc phai thay dieu do, nen canh bao vua
+    # in ra terminal (mau do) vua phai NAM TRONG chinh tai lieu (chuoi co dinh, grep duoc).
+    sdk = evidence_leaf.sdk_backed_leaves(nodes)
+    if sdk:
+        red, reset = evidence_leaf.RED, evidence_leaf.RESET
+        print(f"{red}[R19] CANH BAO — ket luan ve code KHONG dua tren ma nguon doc duoc:{reset}",
+              file=sys.stderr)
+        for it in sdk:
+            print(f"{red}  · nut {it['id']}: '{it['callee']}()' goi tai {it['ref']} khong co dinh "
+                  f"nghia trong source; chong lung la TAI LIEU SDK {it['url']}{reset}",
+                  file=sys.stderr)
+        if not evidence_leaf.has_sdk_warning(text):
+            print(f"[R19 evidence-terminal] chuoi co la tua tai lieu SDK nhung tai lieu thieu "
+                  f"canh bao do — them mot dong chua '{evidence_leaf.SDK_WARN_MARK}' ngay canh "
+                  f"ket luan de nguoi doc biet no khong dua tren ma nguon doc duoc",
+                  file=sys.stderr)
+            sys.exit(2 if strict else 0)
+    sys.exit(0)
 
 
 if __name__ == "__main__":

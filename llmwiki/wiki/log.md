@@ -1,22 +1,15 @@
 
 
+## 2026-09-30 — propose — dsh-loop-graph-knowledge-backport
+
+Gap analysis 19 cơ chế PLAN-2→4 của DeepSeek Harness so với overstack; SPEC 14 task tại `sources/draft/300926-dsh-loop-graph-knowledge-backport-harness.md`, task `T-260930-01`, trạng thái proposed.
+
 <!-- log:auto:start -->
 
 ### 🤖 Log tự-động (code-logger, không do agent ghi)
 
 | Thời điểm | Event | Chi tiết |
 |---|---|---|
-| 2026-08-09 09:24:36 | `commit.reconcile` |  · actor=system · agent_n=1 · human_n=1 · human=['llmwiki/wiki/log.md'] · prev=30a8f7167a46b594fad119b5301d4f43bc5c8e170 |
-| 2026-08-09 09:24:36 | `commit.reconcile` |  · actor=system · agent_n=1 · human_n=2 · human=['harness/scripts/fdk-gate.py', 'fdk/CAPABILITIES.md'] · prev=dca2f4a509 |
-| 2026-08-09 09:24:36 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=1 · human=['harness/version.json'] · prev=bb74d81461d9f724092d338961e814947051f2f1 |
-| 2026-08-09 09:24:38 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=3 · human=['harness/scripts/fdk-gate.py', 'harness/tests/token-attrib-test.sh', 'f |
-| 2026-08-09 09:24:38 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=1 · human=['harness/version.json'] · prev=992d731569a307e767c64a4cc0af0152e43c8a02 |
-| 2026-08-09 09:24:38 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=2 · human=['llmwiki/wiki/log.md', 'harness/scripts/token-attrib.py'] · prev=06ec1f |
-| 2026-08-09 10:42:22 | `file.write` | harness/scripts/token-attrib.py · tool=Edit · session=b8afb386 · actor=agent · prev=0a81e4e3e8a65386f242f54896680fb1076c |
-| 2026-08-09 10:42:22 | `file.write` | harness/scripts/token-attrib.py · tool=Edit · session=b8afb386 · actor=agent · prev=ce44f658d8be596df5f9acdfc7d65c0fc4a9 |
-| 2026-08-09 10:42:58 | `file.write` | harness/scripts/token-attrib.py · tool=Edit · session=b8afb386 · actor=agent · prev=5446e90d47e99e32bbf5f1468b3374a4ad3d |
-| 2026-08-09 10:42:58 | `file.write` | harness/scripts/token-attrib.py · tool=Edit · session=b8afb386 · actor=agent · prev=2aa7dec8740efcf5763fe79aba9199637e56 |
-| 2026-08-09 10:46:42 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=1 · human=['harness/version.json'] · prev=7c572da86966df027c93eb8b24e46e3cf7a664cd |
 | 2026-08-09 10:46:42 | `commit.reconcile` |  · actor=system · agent_n=1 · human_n=2 · human=['harness/tests/token-attrib-test.sh', 'llmwiki/wiki/log.md'] · prev=1ba |
 | 2026-08-09 10:46:44 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=3 · human=['harness/tests/token-attrib-test.sh', 'llmwiki/wiki/log.md', 'harness/s |
 | 2026-08-09 10:46:44 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=1 · human=['harness/version.json'] · prev=761412165ac308368b77d42c2dad5837ed9af60a |
@@ -46,6 +39,17 @@
 | 2026-08-14 20:06:22 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=3 · human=['llmwiki/wiki/sources/120826-session-provenance.md', 'llmwiki/wiki/sour |
 | 2026-08-17 11:46:07 | `file.write` | llmwiki/wiki/index.md · tool=Edit · session=b8afb386 · actor=agent · prev=5918956e63c8df5741e081376323b037953f525d823d7d |
 | 2026-08-17 11:46:07 | `file.write` | llmwiki/wiki/index.md · tool=Edit · session=b8afb386 · actor=agent · prev=b2eea265caa38cd51851c73078c79cdc76681fc834d146 |
+| 2026-08-18 10:29:39 | `file.write` | llmwiki/wiki/index.md · tool=Edit · session=b8afb386 · actor=agent · prev=315e40b58ac74d8c4de9e98877abfd7fdd51f0375c7bc5 |
+| 2026-08-18 10:29:39 | `file.write` | llmwiki/wiki/index.md · tool=Edit · session=b8afb386 · actor=agent · prev=4efd0ae004629cd87c50398a018ced1f46ccdc130b214e |
+| 2026-08-18 11:11:58 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=2 · human=['llmwiki/wiki/sources/180826-session-provenance.md', 'llmwiki/wiki/sour |
+| 2026-08-18 11:11:58 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=1 · human=['llmwiki/wiki/sources/170826-session-provenance.md'] · prev=40ef348b6c8 |
+| 2026-08-18 11:11:58 | `commit.reconcile` |  · actor=system · agent_n=1 · human_n=2 · human=['harness/metrics/.stop-debounce.json', 'llmwiki/wiki/log.md'] · prev=21 |
+| 2026-08-18 21:10:58 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=2 · human=['llmwiki/wiki/sources/180826-session-provenance.md', 'llmwiki/wiki/sour |
+| 2026-08-18 21:10:58 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=1 · human=['llmwiki/wiki/sources/170826-session-provenance.md'] · prev=d8a87077644 |
+| 2026-08-18 21:10:58 | `commit.reconcile` |  · actor=system · agent_n=0 · human_n=3 · human=['llmwiki/wiki/index.md', 'harness/metrics/.stop-debounce.json', 'llmwik |
+| 2026-08-21 12:16:47 | `file.write` | llmwiki/wiki/index.md · tool=Edit · session=b8afb386 · actor=agent · prev=5f7a3fd7e9343abb1d657482a3d2681e558c89c84120b6 |
+| 2026-08-21 12:16:47 | `file.write` | llmwiki/wiki/index.md · tool=Edit · session=b8afb386 · actor=agent · prev=3e86210473f4aa8c744cf7dff03490e3a7404bcaf34c73 |
+| 2026-09-30 20:45:30 | `task.new` |  · task=T-260930-01 · title=dsh loop-graph-knowledge backport · state=proposed · actor=agent · prev=df5e378a2bdef38c2c38 |
 
 <!-- log:auto:end -->
 

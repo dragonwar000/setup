@@ -28,8 +28,13 @@ Trước khi sửa hay xây bất cứ thứ gì, hỏi **"vì sao"** cho tới 
 nữa. Chuỗi `A vì B vì chứng cứ C` là xong; chuỗi `A vì B vì C` mà C lại là suy luận thì CHƯA xong —
 phải khai tiếp C dựa trên cái gì, cho tới khi chạm đáy.
 
-Sáu loại được tính là điểm cuối:
-- `observed` — đường dẫn `file:line` mở ra được, hoặc lệnh chạy lại được kèm output.
+Bảy loại được tính là điểm cuối:
+- `observed` — đường dẫn mở ra được, hoặc lệnh chạy lại được kèm output. KHÔNG dùng cho file mã nguồn.
+- `code-line` — kết luận về CODE: neo vào `path/file.ext:LINE` mở ra được. Dòng neo **không được chỉ
+  là một lời gọi hàm** — `connect(url)` không chứng minh `connect` làm gì, nó chỉ chứng minh có ai đó
+  gọi nó. Nếu dòng neo là lời gọi thì phải khai tiếp đúng một trong hai: `impl_ref` — dòng ĐỊNH NGHĨA
+  của hàm đó trong source; hoặc `sdk_doc` — hàm nằm trong SDK/thư viện, không có trong source, nên
+  phải TRA TÀI LIỆU của SDK/library đó (url tuyệt đối trỏ đúng mục + ngày tra + trích nguyên văn).
 - `tool-record` — id một mục trong provenance-log / events.jsonl / ledger.
 - `graph-edge` — eid một cạnh trong wiki graph.
 - `web` — dữ liệu tìm trên mạng: phải kèm **link tới ĐÚNG CHỖ tìm được** (không phải trang chủ),
@@ -38,6 +43,13 @@ Sáu loại được tính là điểm cuối:
   đâu ra** (tên chuẩn, tài liệu, tác giả), và nói rõ là chưa kiểm chứng. KHÔNG được là điểm cuối duy
   nhất của một kết luận dùng để quyết định — phải nâng lên `web`/`observed` hoặc đi kèm loại khác.
 - `absence` — chính lệnh/truy vấn đã chạy để tìm, kèm output rỗng của nó.
+
+**🔴 CẢNH BÁO SDK — bắt buộc.** Khi một kết luận về code tựa vào TÀI LIỆU SDK/thư viện chứ không vào
+mã nguồn đọc được, phải mở đầu kết luận đó bằng một dòng chứa `🔴 CẢNH BÁO SDK`, nói rõ hàm nào, gọi
+ở dòng nào, và tài liệu nào chống lưng. Lý do: đọc tài liệu KHÁC đọc code — tài liệu có thể cũ, có
+thể mô tả phiên bản khác bản đang cài, có thể đúng chữ mà sai hành vi thật. Người đọc phải THẤY được
+sự khác nhau đó, không phải tự đoán. Áp cho cả CHAT lẫn tài liệu — trong tài liệu thiếu dòng này thì
+R19 chặn.
 
 Không kết luận bằng "rõ ràng là", "ai cũng biết", hay bằng cách trỏ ngược về một mục lập luận khác
 trong cùng câu trả lời. Tài liệu có khối ```evidence-chain thì bị R19 kiểm bằng máy

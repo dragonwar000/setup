@@ -32,3 +32,24 @@ mode: strict                      # strict = chuoi hong CHAN that (exit 2). advi
 #
 # NEU bao oan quay lai (tai lieu that bi chan nham): ha `strictness: advisory` truoc, dieu tra sau.
 # Dung de mot cong chan nham song lau — nguoi ta se hoc cach ne, luc do he mat luon tin hieu that.
+#
+# ── MO RONG 2026-09-08: kind `code-line` + canh bao do SDK ──────────────────────────────────
+# Ket luan ve CODE phai neo vao SO DONG, va dong neo khong duoc chi la mot LOI GOI HAM. Ham co
+# trong source -> `impl_ref` toi dong dinh nghia; ham o SDK/thu vien -> `sdk_doc` (url+accessed+
+# quote) VA tai lieu phai mang dong `🔴 CANH BAO SDK`. `observed` tro vao file ma nguon bi
+# tu choi (bit duong lach). Yeu cau goc: user, phien 57250149, 2026-09-08.
+#
+# ADAPT-CHECKLIST cho phan mo rong — DA CHAY:
+#   1. [x] Do tren corpus that: 339 file .md trong llmwiki/, 0 bi bat (2 file co khoi deu la
+#          tai lieu DAY dinh dang nay, da co `r19_meta: true`) -> bao oan 0/339.
+#   2. [x] python3 harness/validators/evidence_terminal.py --self-test          PASS
+#   3. [x] bash harness/tests/evidence-terminal-test.sh .                       21/21 pass
+#   4. [x] python3 harness/scripts/harness-doctor.py                            19/19 rails bite
+#          (R19 them 2 rail: callsite:bat, impl:im)
+#   5. [x] ge-integration 12/12 · ge-acceptance 5/5 · ge-backcompat 14/14 · drift-test 54/54
+#          (grounding-check.py dung chung evidence_leaf nen chiu anh huong truc tiep)
+#
+# TRAN da biet cua bo do loi goi: no doc MOT DONG van ban, khong dung AST. Bo chuoi va comment
+# truoc khi dem, nhan dang khai bao cua ~8 ngon ngu, nhung cu phap la van co the doc nham CA HAI
+# chieu. Viec "ham nay co trong repo khong" tra bang git grep -> chi de DOI CHIEU voi khai bao cua
+# tac gia, khong tu ket luan; tim khong ra thi bo qua doi chieu, cong chinh van can.

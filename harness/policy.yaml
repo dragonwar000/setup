@@ -163,7 +163,7 @@ rules:
   - id: R19
     name: evidence-terminal
     validator: evidence_terminal.py
-    statement: "Tài liệu mang kết luận có khối ```evidence-chain phải để MỌI đường đi từ gốc tới lá kết thúc ở nút CHỨNG CỨ (observed/tool-record/graph-edge/web/parametric/absence), không được kết thúc ở nút suy luận. `web` đòi url tuyệt đối trỏ đúng chỗ đã đọc + ngày truy cập + trích nguyên văn; `parametric` (kiến thức từ training của model) đòi origin + cờ unverified và KHÔNG được làm điểm cuối duy nhất. Chuỗi vòng tròn = không hợp lệ."
+    statement: "Tài liệu mang kết luận có khối ```evidence-chain phải để MỌI đường đi từ gốc tới lá kết thúc ở nút CHỨNG CỨ (observed/code-line/tool-record/graph-edge/web/parametric/absence), không được kết thúc ở nút suy luận. `web` đòi url tuyệt đối trỏ đúng chỗ đã đọc + ngày truy cập + trích nguyên văn; `parametric` (kiến thức từ training của model) đòi origin + cờ unverified và KHÔNG được làm điểm cuối duy nhất. Chuỗi vòng tròn = không hợp lệ. KẾT LUẬN VỀ CODE dùng `code-line`: neo vào SỐ DÒNG (`path/file.ext:LINE`), và dòng đó KHÔNG được chỉ là một LỜI GỌI HÀM — một lời gọi không chứng minh hàm đó làm gì. Hàm có trong source → phải trỏ tiếp `impl_ref` tới dòng định nghĩa; hàm nằm trong SDK/thư viện → phải tra tài liệu SDK (`sdk_doc`: url + accessed + quote) VÀ tài liệu phải mang CẢNH BÁO ĐỎ `🔴 CẢNH BÁO SDK` cho người đọc. Không được mượn `observed` cho file mã nguồn để né luật này."
     enforce_at: [session, repo]
     applies_to: [write]
     scope: "wiki/**/*.md có chứa khối ```evidence-chain; tài liệu DẠY chính định dạng này khai `r19_meta: true` để miễn"

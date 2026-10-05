@@ -335,6 +335,19 @@
       }
     ]
   },
+  "T-260930-01": {
+    "id": "T-260930-01",
+    "title": "dsh loop-graph-knowledge backport",
+    "state": "proposed",
+    "created": "2026-09-30T20:45:30",
+    "updated": "2026-09-30T20:45:30",
+    "history": [
+      {
+        "state": "proposed",
+        "ts": "2026-09-30T20:45:30"
+      }
+    ]
+  },
   "T-261003-01": {
     "id": "T-261003-01",
     "title": "Harness tích hợp Claude Code CLI và Orca",

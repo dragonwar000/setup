@@ -45,16 +45,85 @@ Tài liệu mang kết luận khai chuỗi bằng một fenced block có info st
 
 Trường `kind` nhận `inference` cho nút suy luận, hoặc một trong sáu loại chứng cứ liệt kê dưới đây. Nút `inference` bắt buộc có `because` không rỗng. Nút chứng cứ bắt buộc có `evidence` và không được có `because` — một nút vừa là chứng cứ vừa dựa vào thứ khác là dấu hiệu tác giả đang nhầm giữa quan sát và diễn giải.
 
-## Sáu loại điểm cuối
+## Bảy loại điểm cuối
 
 | kind | Điều kiện để được tính là điểm cuối |
 |---|---|
-| `observed` | `evidence.ref` là đường dẫn resolve được trên đĩa, hoặc `evidence.cmd` là lệnh chạy lại được kèm output đã ghi |
+| `observed` | `evidence.ref` là đường dẫn resolve được trên đĩa, hoặc `evidence.cmd` là lệnh chạy lại được kèm output đã ghi. **Không** dùng được cho file mã nguồn — chỗ đó là của `code-line` |
+| `code-line` | `evidence.ref` là `path/file.ext:LINE` (hoặc `:START-END`) mở ra được, **và** dòng đó không chỉ là một lời gọi hàm — xem mục riêng bên dưới |
 | `tool-record` | `evidence.id` trỏ tới một mục trong `provenance-log.jsonl`, `events.jsonl` hoặc ledger |
 | `graph-edge` | `evidence.id` là `eid` một cạnh trong wiki graph |
 | `web` | `evidence.url` tuyệt đối trỏ tới đúng chỗ tìm được, cộng `evidence.accessed` là ngày truy cập, cộng `evidence.quote` là trích nguyên văn đoạn được dựa vào |
 | `parametric` | `evidence.origin` không rỗng nêu nguồn gốc kiến thức, cộng `evidence.unverified: true` |
 | `absence` | `evidence.cmd` là chính lệnh hoặc truy vấn đã chạy để tìm, kèm output rỗng của nó |
+
+### `code-line` — kết luận về code neo vào dòng, và dòng đó không được chỉ là lời gọi hàm
+
+Kết luận về code phải chỉ ra được **dòng** nào trong mã nguồn chống lưng cho nó. Một đường dẫn trần
+(`src/transport/stream_socket.ts`) không phải là chứng cứ: file có vài trăm dòng, người đọc mở ra
+vẫn không biết phải nhìn vào đâu, và người viết thì không phải trả giá cho việc đã đọc hay chưa. Vì
+thế `code-line` đòi số dòng, và validator mở đúng dòng đó ra đọc.
+
+Nhưng neo vào một dòng vẫn chưa đủ, vì có một loại dòng trông như chứng cứ mà thật ra rỗng: **lời
+gọi hàm**. Dòng `return sdklib.connect(url)` không chứng minh điều gì về việc `connect` làm gì — nó
+chỉ chứng minh rằng có ai đó gọi nó. Kết luận "phiên treo vì `connect` chặn luồng" mà neo vào chính
+dòng gọi là đang lấy **cái tên** làm bằng chứng cho **hành vi**. Đây đúng là chỗ suy diễn hay chui
+vào: cái tên nghe như đã giải thích xong, nên không ai đi tiếp xuống nữa.
+
+Nên khi dòng neo chỉ là một lời gọi, tác giả phải khai tiếp đúng một trong hai:
+
+- **`impl_ref`** — hàm được gọi **có định nghĩa trong source**. Neo tiếp `path:LINE` tới dòng khai
+  báo hàm đó. Validator mở dòng ấy ra và kiểm rằng nó thật sự là chỗ định nghĩa, không phải một lời
+  gọi khác. Chuỗi lúc này chạm tới thân logic thật.
+- **`sdk_doc`** — hàm được gọi **không có trong source** (nó nằm trong SDK, thư viện, hay runtime).
+  Không có cách nào đọc được nó trong repo, nên chứng cứ hợp lệ duy nhất là **tài liệu của chính
+  SDK/thư viện đó**: `url` tuyệt đối trỏ đúng mục (không phải trang chủ), `accessed` là ngày tra
+  cứu, `quote` là câu nguyên văn nói hàm ấy làm gì. Đúng kỷ luật của `web`, vì bản chất nó là `web`.
+
+Khai cả hai là lỗi: hàm hoặc nằm trong source, hoặc không. Khai `sdk_doc` cho một hàm mà validator
+tìm thấy định nghĩa trong repo cũng là lỗi — lúc đó tác giả đang đọc mô tả thay vì đọc code đang
+chạy, và mô tả thì không phải thứ đang thực thi.
+
+Đường lách hiển nhiên nhất là đổi `kind: code-line` thành `kind: observed` để chỉ phải chứng minh
+file tồn tại. Đường đó bị bịt: `observed` trỏ vào file có đuôi mã nguồn bị từ chối thẳng.
+
+#### Cảnh báo đỏ khi kết luận rời khỏi mã nguồn
+
+Nhánh `sdk_doc` **hợp lệ nhưng không ngang hàng** với nhánh `impl_ref`. Đọc tài liệu không phải là
+đọc code: tài liệu có thể cũ, có thể mô tả một phiên bản khác phiên bản đang cài, có thể đúng chữ
+nhưng sai hành vi thực tế trên nền tảng này. Độ chắc chắn khác nhau thì người đọc phải **thấy** là
+nó khác, chứ không phải tự đoán ra.
+
+Nên mỗi lá `sdk_doc` kéo theo hai thứ. Validator in một dòng **đỏ** lên terminal nói rõ hàm nào, gọi
+ở dòng nào, và tài liệu nào đang chống lưng — in cả khi chuỗi đã hợp lệ, vì đây là cảnh báo chứ
+không phải lỗi. Và chính tài liệu phải mang một dòng chứa `🔴 CẢNH BÁO SDK` đặt ngay cạnh kết luận;
+thiếu dòng đó thì chuỗi bị chặn. Lý do tách làm hai chỗ: cảnh báo trên terminal chỉ người chạy
+validator thấy, còn người sáu tháng sau đọc lại tài liệu thì không — mà chính họ mới là người dễ
+tưởng nhầm kết luận này được rút ra từ mã nguồn.
+
+Ví dụ một lá đủ:
+
+````
+```evidence-chain
+- id: C1
+  claim: "phiên treo ở bước bắt tay vì luồng bị chặn"
+  kind: inference
+  because: [L1]
+- id: L1
+  claim: "connect() chặn cho tới khi handshake xong"
+  kind: code-line
+  evidence:
+    ref: "src/transport/stream_socket.ts:118"
+    callee: "connect"
+    sdk_doc:
+      url: "https://sdklib.example/api/client#connect"
+      accessed: "2026-09-08"
+      quote: "connect(url) blocks until the handshake completes"
+```
+````
+
+Dòng neo có nhiều lời gọi (`foo(bar(x))`) thì phải khai `evidence.callee` để nói rõ kết luận dựa vào
+hàm nào — validator không đoán hộ, vì đoán sai ở đây là gán chứng cứ cho nhầm hàm.
 
 ### `web` — link phải trỏ đúng chỗ đã đọc
 
@@ -88,11 +157,15 @@ C3  model bị giới hạn an toàn    ← không có nút chứng cứ nào ph
 
 Ba hình dạng đỏ khác cũng bị từ chối: chuỗi vòng tròn, nơi `A` dựa vào `B` mà `B` lại dựa vào `A` nên không bao giờ chạm chứng cứ; nút `web` thiếu link hoặc thiếu đoạn trích; và nút `parametric` đứng một mình làm lá duy nhất.
 
+Với code còn bốn hình dạng đỏ nữa: `code-line` không có số dòng; `code-line` dừng ở một dòng chỉ là lời gọi hàm mà không khai tiếp `impl_ref` hay `sdk_doc`; `sdk_doc` dùng cho một hàm thật ra có định nghĩa trong repo; và lá `sdk_doc` hợp lệ nhưng tài liệu thiếu dòng `🔴 CẢNH BÁO SDK`.
+
 ## Giới hạn — đọc kỹ trước khi tin cổng này
 
 Validator kiểm được rằng một đường dẫn có resolve trên đĩa hay không. Nó hoàn toàn không kiểm được nội dung file đó có thật sự chống lưng cho mệnh đề hay không. Một nút `observed` trỏ tới một file có thật nhưng không liên quan vẫn qua cổng.
 
-Nói cách khác, luật này chặn được loại thất bại "chuỗi không có đáy", và không chặn được loại thất bại "đáy không liên quan". Loại thứ hai vẫn cần người đọc. Ghi giới hạn này ra đây là có chủ ý, theo đúng kỷ luật đã học ở [[decision-anchoring]]: trạng thái "không kiểm tra được" phải tách bạch khỏi trạng thái "đã kiểm và sạch", vì trộn hai thứ đó lại sẽ khiến người ta yên tâm về một thứ chưa hề được kiểm.
+Nói cách khác, luật này chặn được loại thất bại "chuỗi không có đáy", và không chặn được loại thất bại "đáy không liên quan". Loại thứ hai vẫn cần người đọc.
+
+Bộ dò lời gọi của `code-line` cũng có trần và nên biết trước: nó đọc **một dòng văn bản**, không dựng AST. Nó bỏ chuỗi và comment trước khi đếm, nhận ra các dạng khai báo phổ biến của bảy tám ngôn ngữ, nhưng cú pháp lạ vẫn có thể bị đọc nhầm theo cả hai chiều. Việc "hàm này có trong repo không" thì tra bằng `git grep` theo mẫu định nghĩa — nó dùng để **đối chiếu** với khai báo của tác giả, không phải để tự kết luận; tìm không ra thì bỏ qua đối chiếu, chứ cổng chính (phải khai `impl_ref` hoặc `sdk_doc`, cả hai đều có neo kiểm được) vẫn cắn. Ghi giới hạn này ra đây là có chủ ý, theo đúng kỷ luật đã học ở [[decision-anchoring]]: trạng thái "không kiểm tra được" phải tách bạch khỏi trạng thái "đã kiểm và sạch", vì trộn hai thứ đó lại sẽ khiến người ta yên tâm về một thứ chưa hề được kiểm.
 
 Tương tự, phần văn xuôi tự do trong hội thoại nằm ngoài tầm với của validator. Không có cách tất định và không tốn token nào để dựng cây suy luận từ một đoạn văn tiếng Việt lẫn tiếng Anh. Phần đó được gác bằng luật chữ trong `CLAUDE.md` và `AGENT.md`, và đo bằng cách chấm mẫu, không bằng cổng xanh đỏ.
 

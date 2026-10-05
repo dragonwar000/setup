@@ -523,8 +523,31 @@ def build_r19(base):
                            capture_output=True, text=True, timeout=30)
         return "1" if "[R19 evidence-terminal]" in r.stderr else "0"
 
+    # Nhanh code-line: ket luan ve CODE neo vao mot dong CHI LA LOI GOI thi phai BAT; neo do
+    # co impl_ref tro dung cho dinh nghia thi phai IM. Fixture code viet ngay canh, root = base,
+    # nen so dong khong troi theo nhung lan sua file that trong repo.
+    (base / "app.py").write_text(
+        "def helper(x):\n    return x + 1\n\ndef run(x):\n    return helper(x)\n",
+        encoding="utf-8")
+    call = mk("r19-callsite.md",
+              "- id: C1\n  claim: \"a\"\n  kind: inference\n  because: [L1]\n"
+              "- id: L1\n  claim: \"b\"\n  kind: code-line\n"
+              "  evidence:\n    ref: \"app.py:5\"\n")
+    impl = mk("r19-impl.md",
+              "- id: C1\n  claim: \"a\"\n  kind: inference\n  because: [L1]\n"
+              "- id: L1\n  claim: \"b\"\n  kind: code-line\n"
+              "  evidence:\n    ref: \"app.py:5\"\n    callee: \"helper\"\n"
+              "    impl_ref: \"app.py:1\"\n")
+
+    def fired_in_base(f):
+        r = subprocess.run([PY, str(v), "--check", str(f), "--root", str(base)],
+                           capture_output=True, text=True, timeout=30)
+        return "1" if "[R19 evidence-terminal]" in r.stderr else "0"
+
     return _result("content", "validators",
-                   [("bad:bat", fired(bad), "1"), ("good:im", fired(good), "0")])
+                   [("bad:bat", fired(bad), "1"), ("good:im", fired(good), "0"),
+                    ("callsite:bat", fired_in_base(call), "1"),
+                    ("impl:im", fired_in_base(impl), "0")])
 
 
 def build_r6(base):

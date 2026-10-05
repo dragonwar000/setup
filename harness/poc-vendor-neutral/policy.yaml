@@ -105,7 +105,7 @@ rules:
     id: R19
     name: evidence-terminal
     kind: content_check
-    statement: "Tai lieu mang ket luan co khoi ```evidence-chain PHAI de MOI duong di tu goc toi la ket thuc o nut CHUNG CU (observed/tool-record/graph-edge/web/parametric/absence), khong duoc ket thuc o nut suy luan. web doi url tuyet doi tro DUNG CHO da doc + ngay truy cap + trich nguyen van; parametric (kien thuc tu TRAINING cua model) doi origin + co unverified va KHONG duoc lam diem cuoi duy nhat. Chuoi vong tron = khong hop le."
+    statement: "Tai lieu mang ket luan co khoi ```evidence-chain PHAI de MOI duong di tu goc toi la ket thuc o nut CHUNG CU (observed/code-line/tool-record/graph-edge/web/parametric/absence), khong duoc ket thuc o nut suy luan. web doi url tuyet doi tro DUNG CHO da doc + ngay truy cap + trich nguyen van; parametric (kien thuc tu TRAINING cua model) doi origin + co unverified va KHONG duoc lam diem cuoi duy nhat. Chuoi vong tron = khong hop le. KET LUAN VE CODE dung code-line: neo vao SO DONG (path/file.ext:LINE), va dong do KHONG duoc chi la mot LOI GOI HAM — mot loi goi khong chung minh ham do lam gi. Ham co trong source thi phai tro tiep impl_ref toi dong dinh nghia; ham nam trong SDK/thu vien thi phai tra tai lieu SDK (sdk_doc: url + accessed + quote) VA tai lieu phai mang CANH BAO DO cho nguoi doc. Khong duoc muon observed cho file ma nguon de ne luat nay."
     enforce_at: [session, repo]
     target_globs: ["**/llmwiki/wiki/**/*.md"]
     when_contains: ["```evidence-chain"]

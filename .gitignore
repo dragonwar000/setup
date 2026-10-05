@@ -62,3 +62,6 @@ llmwiki/wiki/sources/draft/archive/
 
 # mem-rank local memory store
 harness/metrics/memory.jsonl
+
+# okf-scan context receipts
+harness/metrics/context-receipts.jsonl
